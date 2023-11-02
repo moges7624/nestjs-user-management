@@ -9,29 +9,36 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import * as bcyrpt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private repository: Repository<User>) {}
 
-  async create(CreateUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.repository.findOneBy({
-      email: CreateUserDto.email,
+      email: createUserDto.email,
     });
 
     if (existingUser) {
       throw new HttpException(
-        `User with email ${CreateUserDto.email} already exists`,
+        `User with email ${createUserDto.email} already exists`,
         HttpStatus.CONFLICT,
       );
     }
 
-    const user = this.repository.create(CreateUserDto);
+    const hashedPassword = await bcyrpt.hash(createUserDto.password, 10);
+
+    const user = this.repository.create({
+      email: createUserDto.email,
+      password: hashedPassword,
+    });
+
     return await this.repository.save(user);
   }
 
-  findAll(): Promise<User[]> {
-    return this.repository.find();
+  findAll(conditions?: Partial<User>): Promise<User[]> {
+    return this.repository.find({ where: conditions });
   }
 
   findOne(id: number): Promise<User> {
