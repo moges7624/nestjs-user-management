@@ -12,6 +12,8 @@ import { Serialize } from 'src/common/interceptors/serialize.interceptors';
 import { UserDto } from 'src/users/dto/user.dto';
 import { SignupDto } from './dto/signup.dto';
 import { AuthGuard } from 'src/common/guards/auth.guard';
+import { CurrentUser } from 'src/users/decorators/current-user.decorator';
+import { User } from 'src/users/entities/user.entity';
 
 @Controller('auth')
 @Serialize(UserDto)
@@ -20,8 +22,8 @@ export class AuthController {
 
   @Get('/whoami')
   @UseGuards(AuthGuard)
-  whoAmI(@Session() session: any) {
-    return session.userId || null;
+  whoAmI(@CurrentUser() user: User) {
+    return user;
   }
 
   @Post('/signup')
