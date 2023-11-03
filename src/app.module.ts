@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_PIPE } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
+import { ResourcesModule } from './resources/resources.module';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cookieSession = require('cookie-session');
@@ -19,6 +20,7 @@ const cookieSession = require('cookie-session');
       synchronize: true,
     }),
     AuthModule,
+    ResourcesModule,
   ],
   controllers: [AppController],
   providers: [
