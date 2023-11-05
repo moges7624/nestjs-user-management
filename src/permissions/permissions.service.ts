@@ -3,8 +3,8 @@ import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { ResourcesService } from 'src/resources/resources.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Permission } from './entities/permission.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PermissionsService {
@@ -37,6 +37,13 @@ export class PermissionsService {
         resource: true,
       },
     });
+  }
+
+  findAllByIds(ids: number[]): Promise<Permission[]> {
+    return this.repository
+      .createQueryBuilder('permission')
+      .where('permission.id IN (:...ids)', { ids })
+      .getMany();
   }
 
   findOneById(id: number): Promise<Permission> {
