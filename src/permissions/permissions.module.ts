@@ -9,5 +9,6 @@ import { ResourcesModule } from 'src/resources/resources.module';
   imports: [TypeOrmModule.forFeature([Permission]), ResourcesModule],
   controllers: [PermissionsController],
   providers: [PermissionsService],
+  exports: [PermissionsService],
 })
 export class PermissionsModule {}
