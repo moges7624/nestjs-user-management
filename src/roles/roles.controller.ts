@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AuthGuard } from 'src/common/guards/auth.guard';
+import { Role } from './entities/role.entity';
 
 @Controller('roles')
 @UseGuards(AuthGuard)
@@ -29,8 +31,14 @@ export class RolesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.rolesService.findOneById(parseInt(id));
+  async findOne(@Param('id') id: string) {
+    const role: Role = await this.rolesService.findOneById(parseInt(id));
+
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
+
+    return role;
   }
 
   @Put(':id')
