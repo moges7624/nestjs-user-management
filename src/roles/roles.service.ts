@@ -37,13 +37,21 @@ export class RolesService {
     });
   }
 
-  findOneById(id: number): Promise<Role> {
-    return this.repository.findOne({
+  findAllByIds(ids: number[]): Promise<Role[]> {
+    return this.repository
+      .createQueryBuilder('role')
+      .where('role.id IN (:...ids)', { ids })
+      .getMany();
+  }
+
+  async findOneById(id: number): Promise<Role> {
+    const role = await this.repository.findOne({
       where: { id },
       relations: {
         permissions: true,
       },
     });
+    return role;
   }
 
   async update(id: number, updateRoleDto: UpdateRoleDto): Promise<Role> {

@@ -10,10 +10,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcyrpt from 'bcrypt';
+import { RolesService } from 'src/roles/roles.service';
+import { Role } from 'src/roles/entities/role.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private repository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private repository: Repository<User>,
+    private roleSevice: RolesService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.repository.findOneBy({
@@ -37,8 +42,11 @@ export class UsersService {
     return await this.repository.save(user);
   }
 
-  findAll(conditions?: Partial<User>): Promise<User[]> {
-    return this.repository.find({ where: conditions });
+  async findAll(conditions?: Partial<User>): Promise<User[]> {
+    const users = await this.repository.find({
+      where: conditions,
+    });
+    return users;
   }
 
   findOne(id: number): Promise<User> {
@@ -52,6 +60,13 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    if (updateUserDto.roles) {
+      const roles = await this.roleSevice.findAllByIds(updateUserDto.roles);
+
+      user.roles = roles;
+      delete updateUserDto.roles;
+    }
+
     Object.assign(user, updateUserDto);
     this.repository.save(user);
   }
@@ -63,5 +78,14 @@ export class UsersService {
     }
 
     return this.repository.remove(user);
+  }
+
+  async getUserRoles(userId: number): Promise<Role[] | null> {
+    const user = await this.repository.findOne({
+      where: { id: userId },
+      relations: ['roles.permissions'],
+    });
+
+    return user.roles;
   }
 }
